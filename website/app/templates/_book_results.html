@@ -1,0 +1,7 @@
+{% if not books %}
+<p class="empty">No matching books.</p>
+{% else %}
+<div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Price</th><th>Year</th><th>Author</th><th>Publisher</th><th>Category</th></tr></thead><tbody>
+{% for book in books %}<tr><td>{{ book.title }}</td><td>{{ '%.2f'|format(book.price) }}</td><td>{{ book.publish_year }}</td><td>{{ book.author_name }}</td><td>{{ book.publisher_name }}</td><td>{{ book.category_name }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endif %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<section class="card query-nav">
+  <a class="btn btn-small" href="{{ url_for('library.search') }}">Search</a>
+  <a class="btn btn-small" href="{{ url_for('library.catalogue') }}">Catalogue</a>
+  <a class="btn btn-small" href="{{ url_for('library.reports') }}">Reports</a>
+  <a class="btn btn-small" href="{{ url_for('library.loans') }}">Loans</a>
+  <a class="btn btn-small" href="{{ url_for('library.most_borrowed') }}">Most borrowed</a>
+  <a class="btn btn-small" href="{{ url_for('library.authors_books') }}">Authors and books</a>
+</section>
+
+{% if page == 'search' %}
+<section class="card">
+  <h1>Search books</h1>
+  <form method="get" class="form-grid">
+    <label>Title keyword <input name="title" value="{{ keyword }}"></label>
+    <label>Minimum price <input type="number" min="0" step="0.01" name="min_price" value="{{ minimum_price }}"></label>
+    <label>Maximum price <input type="number" min="0" step="0.01" name="max_price" value="{{ maximum_price }}"></label>
+    <label>Category
+      <select name="category_id">
+        <option value="">All categories</option>
+        {% for category in categories %}<option value="{{ category.category_id }}"{% if category.category_id == category_id %} selected{% endif %}>{{ category.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit">Search books</button>
+  </form>
+</section>
+<section class="card">
+  <h2>Matching books</h2>
+  {% include "_book_results.html" %}
+</section>
+{% elif page == 'catalogue' %}
+<section class="card"><h1>Catalogue</h1>{% include "_book_results.html" %}</section>
+{% elif page == 'reports' %}
+<section class="card"><h1>Reports</h1><h2>Books by category</h2>
+<table class="data-table"><thead><tr><th>Category</th><th>Books</th><th>Average price</th></tr></thead><tbody>
+{% for row in category_stats %}<tr><td>{{ row.category_name }}</td><td>{{ row.book_count }}</td><td>{% if row.average_price is not none %}{{ '%.2f'|format(row.average_price) }}{% else %}0.00{% endif %}</td></tr>{% endfor %}
+</tbody></table>
+<h2>Authors with at least two books</h2>
+<table class="data-table"><thead><tr><th>Author</th><th>Books</th></tr></thead><tbody>{% for row in prolific_authors %}<tr><td>{{ row.author_name }}</td><td>{{ row.book_count }}</td></tr>{% endfor %}</tbody></table>
+<h2>Library prices</h2><p>Total: {{ '%.2f'|format(price_totals.total_price) }} | Lowest: {{ '%.2f'|format(price_totals.lowest_price) }} | Highest: {{ '%.2f'|format(price_totals.highest_price) }}</p>
+</section>
+{% elif page == 'loans' %}
+<section class="card"><h1>Loans</h1><h2>Not returned yet</h2>
+<table class="data-table"><thead><tr><th>Book</th><th>Member</th><th>Loan date</th></tr></thead><tbody>{% for row in current_loans %}<tr><td>{{ row.title }}</td><td>{{ row.member_name }}</td><td>{{ row.loan_date }}</td></tr>{% endfor %}</tbody></table>
+<h2>Members who never borrowed</h2><table class="data-table"><thead><tr><th>Name</th><th>Email</th></tr></thead><tbody>{% for row in members_without_loans %}<tr><td>{{ row.name }}</td><td>{{ row.email }}</td></tr>{% endfor %}</tbody></table>
+<h2>Books never borrowed</h2><table class="data-table"><thead><tr><th>Book</th></tr></thead><tbody>{% for row in books_without_loans %}<tr><td>{{ row.title }}</td></tr>{% endfor %}</tbody></table>
+</section>
+{% elif page == 'most_borrowed' %}
+<section class="card"><h1>Most borrowed</h1><h2>Top three books</h2><table class="data-table"><thead><tr><th>Book</th><th>Loans</th></tr></thead><tbody>{% for row in most_borrowed_books %}<tr><td>{{ row.title }}</td><td>{{ row.loan_count }}</td></tr>{% endfor %}</tbody></table>
+<h2>Most active member</h2><table class="data-table"><thead><tr><th>Member</th><th>Loans</th></tr></thead><tbody>{% for row in most_active_members %}<tr><td>{{ row.member_name }}</td><td>{{ row.loan_count }}</td></tr>{% endfor %}</tbody></table></section>
+{% elif page == 'authors_books' %}
+<section class="card"><h1>Authors and books</h1><h2>Every author</h2><table class="data-table"><thead><tr><th>Author</th><th>Country</th><th>Books</th></tr></thead><tbody>{% for row in author_counts %}<tr><td>{{ row.author_name }}</td><td>{{ row.country }}</td><td>{{ row.book_count }}</td></tr>{% endfor %}</tbody></table>
+<h2>Author and publisher from the same country</h2><table class="data-table"><thead><tr><th>Book</th><th>Author</th><th>Publisher</th><th>Country</th></tr></thead><tbody>{% for row in same_country_books %}<tr><td>{{ row.title }}</td><td>{{ row.author_name }}</td><td>{{ row.publisher_name }}</td><td>{{ row.country }}</td></tr>{% endfor %}</tbody></table></section>
+{% endif %}
+{% endblock %}
